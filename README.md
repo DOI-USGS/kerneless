@@ -66,3 +66,11 @@ pytest tests/ -v
 - Python >= 3.7
 - pybind11 >= 2.6.0
 - C++11 compatible compiler
+
+## License
+
+This project is in the public domain in the United States. See [LICENSE.md](LICENSE.md) for full details.
+
+## Disclaimer
+
+This software is preliminary or provisional and is subject to revision. See [DISCLAIMER.md](DISCLAIMER.md) for the complete disclaimer statement.

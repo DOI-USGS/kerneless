@@ -18,6 +18,7 @@
 
     "homepageURL": "https://code.usgs.gov/astrogeology/utcet/",
     "downloadURL": "https://code.usgs.gov/astrogeology/utcet/-/archive/1.0.0/utcet-1.0.0.zip",
+    "disclaimerURL": "https://code.usgs.gov/astrogeology/utcet/-/raw/main/DISCLAIMER.md",
     "repositoryURL": "https://code.usgs.gov/astrogeology/utcet.git",
     "vcs": "git",
 
