@@ -98,6 +98,29 @@ class TestUtcetVsNaif:
         assert calendar_time.startswith(original_time), \
             f"Original: {original_time}, Round-trip: {calendar_time}"
 
+    def test_round_trip_with_microseconds(self):
+        """Test round trip with microsecond precision for 2016-11-26 22:32:14.582000."""
+        original_time = "2016-11-26T22:32:14.582000"
+
+        # Convert to ET
+        et_utcet = utcet.calendarTimeToEphemTime(original_time)
+        et_spice = spice.str2et(original_time)
+
+        print(f"Original UTC: {original_time}, ET (utcet): {et_utcet}, ET (SPICE): {et_spice}")
+        print(f"Difference in ET: {abs(et_utcet - et_spice)} seconds")
+
+        # Verify ET matches SPICE
+        assert et_utcet == pytest.approx(et_spice, abs=1e-6), \
+            f"ET mismatch: utcet={et_utcet}, SPICE={et_spice}"
+
+        # Convert back with millisecond precision
+        calendar_utcet = utcet.ephemTimeToCalendarTime(et_utcet, prec=3)
+        calendar_spice = spice.et2utc(et_spice, 'ISOC', 3)
+
+        # Both should match exactly now (no 'Z' suffix)
+        assert calendar_utcet == calendar_spice, \
+            f"Round-trip failed: utcet={calendar_utcet}, SPICE={calendar_spice}"
+
     def test_inverse_comparison(self):
         """Test inverse conversion (ET to calendar) against SPICE."""
         test_et_values = [0.0, 1e8, -1e8, 5e8]
@@ -109,20 +132,16 @@ class TestUtcetVsNaif:
             # NAIF SPICE
             cal_spice = spice.et2utc(et, 'ISOC', 3)
 
-            # Extract just the datetime part (both should have same format)
-            # utcet format: YYYY-MM-DDTHH:MM:SS.sssZ
-            # spice format: YYYY-MM-DDTHH:MM:SS.sss
-            utcet_dt = cal_utcet[:-1] if cal_utcet.endswith('Z') else cal_utcet
-
-            # Parse and compare - allow 1ms difference due to rounding
+            # Both formats: YYYY-MM-DDTHH:MM:SS.sss
+            # Parse and compare with tolerance for rounding differences
             from datetime import datetime
-            utcet_time = datetime.fromisoformat(utcet_dt)
+            utcet_time = datetime.fromisoformat(cal_utcet)
             spice_time = datetime.fromisoformat(cal_spice)
 
-            # Compare as timestamps (within 2 milliseconds for rounding)
             utcet_ts = utcet_time.timestamp()
             spice_ts = spice_time.timestamp()
 
+            # Allow up to 2ms difference for rounding
             assert utcet_ts == pytest.approx(spice_ts, abs=0.002, rel=0), \
                 f"ET: {et}, utcet: {cal_utcet}, NAIF: {cal_spice}"
 
@@ -173,3 +192,4 @@ def test_basic_functionality():
     cal = utcet.ephemTimeToCalendarTime(et)
     assert isinstance(cal, str)
     assert "2000-01-01T12:00:00" in cal
+    assert not cal.endswith('Z'), "Output should not have 'Z' suffix"

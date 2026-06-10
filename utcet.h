@@ -4,6 +4,13 @@
 #include <string>
 #include <vector>
 
+// Windows compatibility
+#ifdef _WIN32
+  #define timegm _mkgmtime
+  #include <iomanip>
+  #include <sstream>
+#endif
+
 // Leap-second table: UTC dates when TAI-UTC incremented.
 // Source: IERS Bulletin C / NAIF naif0012.tls.
 namespace {
@@ -44,20 +51,42 @@ namespace {
     }
     return leap;
   }
+
+#ifdef _WIN32
+  // Windows-compatible strptime replacement for ISO 8601 format
+  char* portable_strptime(const char* s, const char* format, struct tm* tm) {
+    std::istringstream input(s);
+    input.imbue(std::locale("C"));
+    input >> std::get_time(tm, format);
+    if (input.fail()) {
+      return nullptr;
+    }
+    // Return pointer to remaining string
+    return const_cast<char*>(s + input.tellg());
+  }
+  #define strptime portable_strptime
+#endif
 }
 
 double calendarTimeToEphemTime(std::string calendarTime) {
 
   struct tm t = {};
-  strptime(calendarTime.c_str(), "%Y-%m-%dT%H:%M:%S", &t);
+  char *end = strptime(calendarTime.c_str(), "%Y-%m-%dT%H:%M:%S", &t);
   std::time_t utc_unix = timegm(&t);
+
+  // Parse fractional seconds if present
+  double fractional_seconds = 0.0;
+  if (end != nullptr && *end == '.') {
+    // Parse fractional part after decimal point
+    fractional_seconds = std::stod(end);
+  }
 
   // Look up the correct leap-second count for this UTC date
   int y = t.tm_year + 1900, m = t.tm_mon + 1, d = t.tm_mday;
   int leap = getLeapSeconds(y, m, d);
 
   // Convert UTC Unix time to seconds since J2000 epoch (UTC)
-  double seconds_since_j2000_utc = (double)utc_unix - J2000_UTC_UNIX;
+  double seconds_since_j2000_utc = (double)utc_unix - J2000_UTC_UNIX + fractional_seconds;
 
   // Calculate TDB-TAI using periodic terms
   // Use the approximate ephemeris time for the periodic correction
@@ -99,14 +128,18 @@ std::string ephemTimeToCalendarTime(double ephemTime, std::string format, int pr
   int precisionMult = pow(10, prec);
   frac *= precisionMult;
 
-  if (utclen < (19 + prec + 3)) {
+  // Buffer size: YYYY-MM-DDTHH:MM:SS + . + digits + null
+  int required_size = 19 + 1 + prec + 1;
+  if (utclen < required_size) {
     throw std::runtime_error("A utclen of {" + std::to_string(utclen) + "} to small for expected string size of "
-                        "{" + std::to_string(19 + prec + 3) + "}");
+                        "{" + std::to_string(required_size) + "}");
   }
 
   char buffer[utclen];
-  strftime(buffer, 22, "%Y-%m-%dT%H:%M:%S", std::gmtime(&utc_unix));
-  std::string precisionStr = ".%0" + std::to_string(prec) + "dZ";
-  snprintf(buffer + 19, prec + 3, precisionStr.c_str(), (int)frac);
+  strftime(buffer, 20, "%Y-%m-%dT%H:%M:%S", std::gmtime(&utc_unix));
+
+  // Add fractional seconds (without 'Z' to match NAIF format)
+  std::string precisionStr = ".%0" + std::to_string(prec) + "d";
+  snprintf(buffer + 19, prec + 2, precisionStr.c_str(), (int)frac);
   return buffer;
 }
