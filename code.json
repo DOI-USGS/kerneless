@@ -3,8 +3,8 @@
     "name": "utcet",
     "organization": "U.S. Geological Survey",
     "description": "Header-only C++ library reimplementing NAIF's utc2et and et2utc without requiring leap second kernels (LSK files). Includes Python bindings via pybind11.",
-    "version": "1.0.0",
-    "status": "Production",
+    "version": "0.1.0",
+    "status": "Development",
 
     "permissions": {
       "usageType": "openSource",
@@ -17,7 +17,7 @@
     },
 
     "homepageURL": "https://code.usgs.gov/astrogeology/utcet/",
-    "downloadURL": "https://code.usgs.gov/astrogeology/utcet/-/archive/1.0.0/utcet-1.0.0.zip",
+    "downloadURL": "https://code.usgs.gov/astrogeology/utcet/-/archive/main/utcet-main.zip",
     "disclaimerURL": "https://code.usgs.gov/astrogeology/utcet/-/raw/main/DISCLAIMER.md",
     "repositoryURL": "https://code.usgs.gov/astrogeology/utcet.git",
     "vcs": "git",
@@ -43,7 +43,7 @@
     },
 
     "date": {
-      "metadataLastUpdated": "2026-06-09"
+      "metadataLastUpdated": "2026-06-11"
     }
   }
 ]
