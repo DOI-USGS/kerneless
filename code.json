@@ -3,7 +3,7 @@
     "name": "utcet",
     "organization": "U.S. Geological Survey",
     "description": "Header-only C++ library reimplementing NAIF's utc2et and et2utc without requiring leap second kernels (LSK files). Includes Python bindings via pybind11.",
-    "version": "0.1.0",
+    "version": "main",
     "status": "Development",
 
     "permissions": {
