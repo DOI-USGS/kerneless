@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-// Windows compatibility
 #ifdef _WIN32
   #define timegm _mkgmtime
 #endif
@@ -73,7 +72,7 @@ namespace {
     return leap;
   }
 
-  // Map a (possibly full) English month name to 1-12, matching on the first
+  // Map a English month name to 1-12, matching on the first
   // three letters as CSPICE's str2et does. Returns 0 when the token is not a
   // recognized month name.
   int monthFromName(const std::string &token) {
