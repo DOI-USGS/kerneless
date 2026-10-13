@@ -1,5 +1,5 @@
 import pytest
-import utcet
+import kerneless
 
 try:
     import spiceypy as spice
@@ -10,7 +10,7 @@ except ImportError:
 
 @pytest.mark.skipif(not HAS_SPICEYPY, reason="spiceypy not installed")
 class TestUtcetVsNaif:
-    """Compare utcet implementation against NAIF SPICE."""
+    """Compare kerneless' utcet.h implementation against NAIF SPICE."""
 
     @classmethod
     def setup_class(cls):
@@ -41,7 +41,7 @@ class TestUtcetVsNaif:
         utc_time = "2000-01-01T12:00:00"
 
         # Our implementation
-        et_utcet = utcet.calendarTimeToEphemTime(utc_time)
+        et_utcet = kerneless.calendarTimeToEphemTime(utc_time)
 
         # NAIF SPICE
         et_spice = spice.str2et(utc_time)
@@ -61,7 +61,7 @@ class TestUtcetVsNaif:
         ]
 
         for utc_time in test_dates:
-            et_utcet = utcet.calendarTimeToEphemTime(utc_time)
+            et_utcet = kerneless.calendarTimeToEphemTime(utc_time)
             et_spice = spice.str2et(utc_time)
 
             assert et_utcet == pytest.approx(et_spice, abs=1e-6), \
@@ -78,7 +78,7 @@ class TestUtcetVsNaif:
         ]
 
         for utc_time in leap_second_dates:
-            et_utcet = utcet.calendarTimeToEphemTime(utc_time)
+            et_utcet = kerneless.calendarTimeToEphemTime(utc_time)
             et_spice = spice.str2et(utc_time)
             print(f"Testing leap second boundary: {utc_time}, utcet: {et_utcet}, NAIF: {et_spice}")
             assert et_utcet == pytest.approx(et_spice, abs=1e-6), \
@@ -89,10 +89,10 @@ class TestUtcetVsNaif:
         original_time = "2010-05-20T14:30:45"
 
         # Convert to ET
-        et = utcet.calendarTimeToEphemTime(original_time)
+        et = kerneless.calendarTimeToEphemTime(original_time)
 
         # Convert back to calendar time
-        calendar_time = utcet.ephemTimeToCalendarTime(et, prec=0)
+        calendar_time = kerneless.ephemTimeToCalendarTime(et, prec=0)
 
         # Should match (without fractional seconds since prec=0)
         assert calendar_time.startswith(original_time), \
@@ -103,7 +103,7 @@ class TestUtcetVsNaif:
         original_time = "2016-11-26T22:32:14.582000"
 
         # Convert to ET
-        et_utcet = utcet.calendarTimeToEphemTime(original_time)
+        et_utcet = kerneless.calendarTimeToEphemTime(original_time)
         et_spice = spice.str2et(original_time)
 
         print(f"Original UTC: {original_time}, ET (utcet): {et_utcet}, ET (SPICE): {et_spice}")
@@ -114,7 +114,7 @@ class TestUtcetVsNaif:
             f"ET mismatch: utcet={et_utcet}, SPICE={et_spice}"
 
         # Convert back with millisecond precision
-        calendar_utcet = utcet.ephemTimeToCalendarTime(et_utcet, prec=3)
+        calendar_utcet = kerneless.ephemTimeToCalendarTime(et_utcet, prec=3)
         calendar_spice = spice.et2utc(et_spice, 'ISOC', 3)
 
         # Both should match exactly now (no 'Z' suffix)
@@ -127,7 +127,7 @@ class TestUtcetVsNaif:
 
         for et in test_et_values:
             # Our implementation
-            cal_utcet = utcet.ephemTimeToCalendarTime(et, prec=3)
+            cal_utcet = kerneless.ephemTimeToCalendarTime(et, prec=3)
 
             # NAIF SPICE
             cal_spice = spice.et2utc(et, 'ISOC', 3)
@@ -165,7 +165,7 @@ class TestUtcetVsNaif:
             utc_time = random_date.strftime("%Y-%m-%dT%H:%M:%S")
 
             # Convert using both implementations
-            et_utcet = utcet.calendarTimeToEphemTime(utc_time)
+            et_utcet = kerneless.calendarTimeToEphemTime(utc_time)
             et_spice = spice.str2et(utc_time)
 
             # Check if within tolerance
@@ -186,10 +186,10 @@ class TestUtcetVsNaif:
 def test_basic_functionality():
     """Basic tests that don't require SPICE."""
     # Test that functions exist and run without error
-    et = utcet.calendarTimeToEphemTime("2000-01-01T12:00:00")
+    et = kerneless.calendarTimeToEphemTime("2000-01-01T12:00:00")
     assert isinstance(et, float)
 
-    cal = utcet.ephemTimeToCalendarTime(et)
+    cal = kerneless.ephemTimeToCalendarTime(et)
     assert isinstance(cal, str)
     assert "2000-01-01T12:00:00" in cal
     assert not cal.endswith('Z'), "Output should not have 'Z' suffix"

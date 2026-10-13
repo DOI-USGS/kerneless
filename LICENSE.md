@@ -21,11 +21,11 @@ text)](https://creativecommons.org/publicdomain/zero/1.0/legalcode).
 
 ### No Copyright
 
-The authors have associated their contributions to the ISIS project
-with this deed, and have dedicated the work to the public domain
-by waiving all of their rights to the work worldwide under copyright
-law, including all related and neighboring rights, to the extent
-allowed by law.
+The authors have associated their contributions to the kerneless
+project with this deed, and have dedicated the work to the public
+domain by waiving all of their rights to the work worldwide under
+copyright law, including all related and neighboring rights, to the
+extent allowed by law.
 
 You can copy, modify, distribute and perform the work, even for
 commercial purposes, all without asking permission.
@@ -38,7 +38,22 @@ by CC0, nor are the rights that other persons may have in the work
 or in how the work is used, such as publicity or privacy rights.
 
 Unless expressly stated otherwise, the authors who have associated
-the ISIS project with this deed make no warranties about the work,
-and disclaim liability for all uses of the work, to the fullest
+the kerneless project with this deed make no warranties about the
+work, and disclaim liability for all uses of the work, to the fullest
 extent permitted by applicable law. When using or citing the work,
 you should not imply endorsement by the authors.
+
+
+Third-party content
+-------------------
+
+The "unless otherwise noted" above applies to the following, which
+originated outside this project and carry their own attribution:
+
+- `include/kerneless/dsk_reader.h` originated in PSMRTS and is marked
+  CC0 1.0 by the OSIRIS-APEX (OSIRIS-APophis EXplorer) project at the
+  University of Arizona. The file retains that attribution and its
+  `SPDX-License-Identifier: CC0-1.0` in its own header block.
+
+- `tests/data/bennu_20facets.bds` is a 20-vertex NAIF DSK shape model
+  of Bennu, vendored from PSMRTS for use as a test fixture.

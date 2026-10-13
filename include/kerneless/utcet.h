@@ -1,3 +1,18 @@
+#ifndef KERNELESS_UTCET_H
+#define KERNELESS_UTCET_H
+
+/**
+ * @file kerneless/utcet.h
+ * @brief Header-only reimplementation of NAIF's utc2et / et2utc that needs no
+ *        leap second kernel (LSK): the leap second table is embedded below.
+ *
+ *      cspice          this header
+ *      -----------     -----------------------------
+ *      str2et_c        calendarTimeToEphemTime
+ *      utc2et_c        calendarTimeToEphemTime
+ *      et2utc_c        ephemTimeToCalendarTime
+ */
+
 #include <algorithm>
 #include <cctype>
 #include <cmath>
@@ -281,7 +296,7 @@ namespace {
   }
 }
 
-double calendarTimeToEphemTime(std::string calendarTime) {
+inline double calendarTimeToEphemTime(std::string calendarTime) {
 
   struct tm t = {};
   double fractional_seconds = 0.0;
@@ -339,7 +354,7 @@ double calendarTimeToEphemTime(std::string calendarTime) {
 }
 
 
-std::string ephemTimeToCalendarTime(double ephemTime, std::string format, int prec, int utclen) {
+inline std::string ephemTimeToCalendarTime(double ephemTime, std::string format, int prec, int utclen) {
   // Calculate TDB-TAI using periodic terms
   double mean_m = M[0] + M[1] * ephemTime;
   double E = mean_m + EB * sin(mean_m);
@@ -492,3 +507,5 @@ std::string ephemTimeToCalendarTime(double ephemTime, std::string format, int pr
   }
   return result;
 }
+
+#endif  // KERNELESS_UTCET_H

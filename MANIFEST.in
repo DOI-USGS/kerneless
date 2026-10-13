@@ -1,0 +1,9 @@
+include DISCLAIMER.md
+recursive-include include *.h
+recursive-include tests *.py
+recursive-include tests/data *.bds
+recursive-include tests/smoke *.c *.cpp
+include CHANGELOG.md CONTRIBUTING.md CODE_OF_CONDUCT.md
+# USGS policy requires code.json in the root of the repository; ship it with the
+# source distribution too, so a released tarball carries its own metadata.
+include code.json

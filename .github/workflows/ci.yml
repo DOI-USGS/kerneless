@@ -1,0 +1,174 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch: {}
+
+# One CI run per ref; a newer push supersedes an in-flight run.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+# Least privilege: nothing here needs more than read access to the repository.
+# A job that needs more should request it in the job, not here.
+# All actions below are GitHub-owned and referenced by major-version tag. Any
+# THIRD-PARTY action added to this workflow must be pinned to a full commit SHA
+# with a trailing version comment (DGEC requirement: GitHub Actions Compliance).
+permissions:
+  contents: read
+
+jobs:
+  # The Python bindings, checked against NAIF SPICE.
+  test:
+    name: test (${{ matrix.os }}, py${{ matrix.python-version }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python-version: ["3.9", "3.11", "3.13"]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install
+        run: pip install ".[test]"
+
+      # The suite skips its SPICE comparison tests when spiceypy is missing, so a
+      # silent install failure would look like a green run that proved nothing.
+      - name: Confirm spiceypy is available
+        run: python -c "import spiceypy; print('spiceypy', spiceypy.__version__)"
+
+      - name: Run tests
+        run: pytest tests/ -v
+
+  # The header-only promise: no build system, no dependencies, no duplicate
+  # symbols across translation units.
+  headers:
+    name: headers (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # dsk_reader.h must stay compilable by a C compiler, warning-free.
+      - name: Compile dsk_reader.h as C99
+        run: |
+          set -euo pipefail
+          cc -std=c99 -Wall -Wextra -Werror -Iinclude -o smoke_c tests/smoke/smoke.c
+          ./smoke_c
+
+      # Compiled twice and linked together: a missing include guard or a public
+      # function that lost its `inline` fails here at link time.
+      - name: Compile both headers as C++11, linked as two translation units
+        run: |
+          set -euo pipefail
+          c++ -std=c++11 -Wall -Wextra -Werror -Iinclude -DKERNELESS_SMOKE_MAIN \
+            -c tests/smoke/smoke.cpp -o smoke_main.o
+          c++ -std=c++11 -Wall -Wextra -Werror -Iinclude \
+            -c tests/smoke/smoke.cpp -o smoke_other.o
+          c++ smoke_main.o smoke_other.o -o smoke_cxx
+          ./smoke_cxx
+
+  # Where the headers land in the built artifacts. Both of these invariants have
+  # broken before: setuptools' flat-layout auto-discovery packs include/ into
+  # site-packages unless packages/py-modules are declared empty, and the sdist
+  # omits the test fixture without MANIFEST.in.
+  packaging:
+    name: packaging
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Build wheel and sdist
+        run: |
+          set -euo pipefail
+          pip install build
+          python -m build
+
+      - name: Check artifact layout
+        run: |
+          python - <<'PY'
+          import glob, sys, tarfile, zipfile
+
+          failures = []
+
+          wheel = sorted(glob.glob("dist/kerneless-*.whl"))[-1]
+          names = zipfile.ZipFile(wheel).namelist()
+
+          # Headers install to <prefix>/include/kerneless/ via data_files.
+          for header in ("utcet.h", "dsk_reader.h"):
+              want = f".data/data/include/kerneless/{header}"
+              if not any(n.endswith(want) for n in names):
+                  failures.append(f"wheel is missing {want}")
+
+          # ...and must NOT also be packed at the wheel root, which would copy
+          # them into site-packages.
+          stray = [n for n in names if n.startswith("include/")]
+          if stray:
+              failures.append(f"wheel has headers at its root: {stray}")
+
+          sdist = sorted(glob.glob("dist/kerneless-*.tar.gz"))[-1]
+          members = tarfile.open(sdist).getnames()
+          for want in (
+              "include/kerneless/utcet.h",
+              "include/kerneless/dsk_reader.h",
+              "tests/data/bennu_20facets.bds",
+              "DISCLAIMER.md",
+              "LICENSE.md",
+              "code.json",
+          ):
+              if not any(n.endswith("/" + want) for n in members):
+                  failures.append(f"sdist is missing {want}")
+
+          print(f"wheel: {wheel}")
+          print(f"sdist: {sdist}")
+          for f in failures:
+              print(f"FAIL: {f}", file=sys.stderr)
+          sys.exit(1 if failures else 0)
+          PY
+
+  # USGS policy: no sensitive content may enter a public repository, and history
+  # is permanent. This is a backstop for the PR checklist, not a substitute for
+  # the administrative security review.
+  sensitive-content:
+    name: sensitive content scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # This file and the PR template quote the patterns being searched for, so
+      # they are excluded or the scan matches itself.
+      - name: Scan for absolute paths and credentials
+        run: |
+          set -uo pipefail
+          hits=$(grep -rnE '/Users/|/home/[a-z]|C:\\\\Users|password|passwd|secret_key|BEGIN [A-Z ]*PRIVATE KEY' \
+            --include='*.py' --include='*.cpp' --include='*.h' --include='*.md' \
+            --include='*.toml' --include='*.json' --include='*.yml' --include='*.in' \
+            --exclude='ci.yml' --exclude='pull_request_template.md' \
+            . || true)
+          if [ -n "$hits" ]; then
+            echo "$hits"
+            echo "::error::Possible sensitive content (absolute paths or credentials). See the pre-release security check in the PR template."
+            exit 1
+          fi
+          echo "No absolute paths or credentials found."

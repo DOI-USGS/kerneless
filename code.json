@@ -1,9 +1,9 @@
 [
   {
-    "name": "utcet",
+    "name": "kerneless",
     "organization": "U.S. Geological Survey",
-    "description": "Header-only C++ library reimplementing NAIF's utc2et and et2utc without requiring leap second kernels (LSK files). Includes Python bindings via pybind11.",
-    "version": "main",
+    "description": "Header-only C/C++ library reimplementing NAIF SPICE functionality without SPICE kernels or the SPICE toolkit: utc2et/et2utc without leap second kernels (LSK files), and DSK type-2 plate model reading without cspice. Includes Python bindings via pybind11.",
+    "version": "0.1.0",
     "status": "Development",
 
     "permissions": {
@@ -11,15 +11,15 @@
       "licenses": [
         {
           "name": "Public Domain, CC0-1.0",
-          "URL": "https://code.usgs.gov/astrogeology/utcet/-/raw/main/LICENSE.md"
+          "URL": "https://github.com/DOI-USGS/kerneless/raw/main/LICENSE.md"
         }
       ]
     },
 
-    "homepageURL": "https://code.usgs.gov/astrogeology/utcet/",
-    "downloadURL": "https://code.usgs.gov/astrogeology/utcet/-/archive/main/utcet-main.zip",
-    "disclaimerURL": "https://code.usgs.gov/astrogeology/utcet/-/raw/main/DISCLAIMER.md",
-    "repositoryURL": "https://code.usgs.gov/astrogeology/utcet.git",
+    "homepageURL": "https://github.com/DOI-USGS/kerneless",
+    "downloadURL": "https://github.com/DOI-USGS/kerneless/archive/refs/heads/main.zip",
+    "disclaimerURL": "https://github.com/DOI-USGS/kerneless/raw/main/DISCLAIMER.md",
+    "repositoryURL": "https://github.com/DOI-USGS/kerneless.git",
     "vcs": "git",
 
     "laborHours": 0,
@@ -29,10 +29,14 @@
       "Time Conversion",
       "SPICE",
       "Ephemeris Time",
-      "UTC"
+      "UTC",
+      "DSK",
+      "Shape Model",
+      "usg-artificial-intelligence"
     ],
 
     "languages": [
+      "C",
       "C++",
       "Python"
     ],
@@ -43,7 +47,7 @@
     },
 
     "date": {
-      "metadataLastUpdated": "2026-06-11"
+      "metadataLastUpdated": "2026-10-08"
     }
   }
 ]

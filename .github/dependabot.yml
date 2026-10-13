@@ -1,0 +1,31 @@
+version: 2
+
+# Automated dependency updates. kerneless has no runtime dependencies — both
+# headers are standard-library only — so this covers just the build/test
+# toolchain and the CI actions. Note that third-party GitHub Actions are pinned
+# to full commit SHAs (DGEC requirement); Dependabot understands SHA pins and
+# will bump the SHA and the trailing version comment together.
+updates:
+  # Build and test requirements declared in pyproject.toml (pybind11, pytest,
+  # spiceypy).
+  - package-ecosystem: pip
+    directory: /
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 5
+    labels:
+      - dependencies
+    commit-message:
+      prefix: "deps:"
+
+  # GitHub Actions used by the workflows in .github/workflows/.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 5
+    labels:
+      - dependencies
+      - ci
+    commit-message:
+      prefix: "deps(ci):"
