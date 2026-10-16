@@ -35,7 +35,7 @@ release.
 
 ## [Unreleased]
 
-## [0.1.0] - 2026-10-08
+## [1.0.0] - 2026-10-16
 
 First provisional release. This software has not received final approval by the
 U.S. Geological Survey; see [DISCLAIMER.md](DISCLAIMER.md).
@@ -71,5 +71,5 @@ U.S. Geological Survey; see [DISCLAIMER.md](DISCLAIMER.md).
 - Added an include guard to `utcet.h` and marked its two public functions `inline`.
   Without these, including the header from more than one translation unit failed to link.
 
-[Unreleased]: https://github.com/DOI-USGS/kerneless/compare/0.1.0...HEAD
-[0.1.0]: https://github.com/DOI-USGS/kerneless/releases/tag/0.1.0
+[Unreleased]: https://github.com/DOI-USGS/kerneless/compare/1.0.0...HEAD
+[1.0.0]: https://github.com/DOI-USGS/kerneless/releases/tag/1.0.0

@@ -40,37 +40,6 @@ Or skip the install entirely: add this repository's [include/](include/) to your
 include path, or copy the single header you need. There is nothing to build or
 link.
 
-### If `import kerneless` looks empty
-
-```python
->>> dir(kerneless)
-['__doc__', '__file__', '__loader__', '__name__', '__package__', '__path__', '__spec__']
-```
-
-That `__path__`, with no functions, means Python imported a *directory* named
-`kerneless` as an empty namespace package instead of the extension module. Two
-directories in a clone can do it: the clone itself, and `include/kerneless/`.
-Python puts the current directory at the front of `sys.path`, so running
-`python` from the directory *containing* your clone shadows the install:
-
-```bash
-cd ~/repos && python -c "import kerneless"   # finds ~/repos/kerneless/, the clone
-```
-
-Run it from anywhere else, or keep the current directory off the import path:
-
-```bash
-python -P -c "import kerneless"              # or export PYTHONSAFEPATH=1
-```
-
-The same applies if `include/` ever lands on `PYTHONPATH` — it holds only
-headers, so `include/kerneless/` imports as an empty namespace package too. It
-belongs on your compiler's include path, not Python's.
-
-This only affects editable installs (`pip install -e .`). A regular
-`pip install` is immune: the extension module lands in `site-packages`, and a
-real module always beats a namespace directory.
-
 ## Usage
 
 ### Time conversion (`kerneless/utcet.h`)
@@ -184,7 +153,7 @@ that need SPICE skip themselves when spiceypy is missing.
 ## Suggested Citation
 
 Rodriguez, K., 2026, kerneless: Header-only SPICE-compatible time conversion and DSK
-reading without SPICE kernels, version 0.1.0: U.S. Geological Survey software release,
+reading without SPICE kernels, version 1.0.0: U.S. Geological Survey software release,
 https://github.com/DOI-USGS/kerneless.
 
 A Digital Object Identifier (DOI) will be assigned when this software completes USGS

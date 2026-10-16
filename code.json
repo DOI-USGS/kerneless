@@ -3,7 +3,7 @@
     "name": "kerneless",
     "organization": "U.S. Geological Survey",
     "description": "Header-only C/C++ library reimplementing NAIF SPICE functionality without SPICE kernels or the SPICE toolkit: utc2et/et2utc without leap second kernels (LSK files), and DSK type-2 plate model reading without cspice. Includes Python bindings via pybind11.",
-    "version": "0.1.0",
+    "version": "1.0.0",
     "status": "Development",
 
     "permissions": {
@@ -47,7 +47,7 @@
     },
 
     "date": {
-      "metadataLastUpdated": "2026-10-08"
+      "metadataLastUpdated": "2026-10-16"
     }
   }
 ]
